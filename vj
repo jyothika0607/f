@@ -1,0 +1,102 @@
+index.html
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div>TODO write content</div>
+        <form action="usereval.jsp">
+            Enter username: <input type="text" name="username" ><br>
+            Enter password:<input type="password" name="pw"> <br>
+            <input type="submit" value="login">
+        </form>
+    </body>
+</html>
+home.html
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div> WELCOME TO HOME PAGE</div>
+    </body>
+</html>
+error.html
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div> Error</div>
+        <p>Check password</p>
+        <form action="index.html">
+            <input type="submit" value="Try again">
+           
+           
+        </form>
+    </body>
+</html>
+usereval.jsp
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page import ="java.sql.ResultSet"%>
+<%@page import="java.sql.Statement"%>
+<%@page import="java.sql.Connection" %>
+<%@page import="java.sql.DriverManager"%>
+
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>login Page</title>
+    </head>
+    <body>
+        <h1>login here </h1>
+        <%
+            String usn=request.getParameter("username");
+            String pw=request.getParameter("pw");
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/5h8","root","password");
+            Statement st=con.createStatement();
+                   ResultSet rs=st.executeQuery("select * from users where username='"+usn+"'");
+        if(rs.next()){
+            String getpw=rs.getString(3);
+            if(getpw.equals(pw)){
+                response.sendRedirect("home.html");
+            }
+            else{
+               
+                response.sendRedirect("error.html");
+            }
+        }
+        else{
+            request.getRequestDispatcher("index.html").forward(request,response);
+        }
+       
+        %>
+    </body>
+</html>
