@@ -1,0 +1,95 @@
+App.js
+import React, { useState } from 'react';
+import './App.css';
+
+function App() {
+  const [votes, setVotes] = useState({ candidate1: 0, candidate2: 0 });
+  const [winner, setWinner] = useState(null);
+  const [majority, setMajority] = useState(null);
+
+  const handleVote = (candidate) => {
+    setVotes((prevVotes) => ({
+      ...prevVotes,
+      [candidate]: prevVotes[candidate] + 1,
+    }));
+  };
+
+  const handleSubmit = () => {
+    const { candidate1, candidate2 } = votes;
+    if (candidate1 > candidate2) {
+      setWinner('Candidate 1');
+      setMajority(candidate1 - candidate2);
+    } else if (candidate2 > candidate1) {
+      setWinner('Candidate 2');
+      setMajority(candidate2 - candidate1);
+    } else {
+      setWinner('It\'s a tie');
+      setMajority(0);
+    }
+  };
+
+  return (
+    <div className="App">
+      <h1>Voting Application</h1>
+      <div>
+        <button onClick={() => handleVote('candidate1')}>👩🏻 Candidate 1</button>
+        <button onClick={() => handleVote('candidate2')}>👩🏻‍🦰 Candidate 2</button>
+      </div>
+      <button onClick={handleSubmit}>Submit</button>
+      {winner && (
+        <div>
+          <h2>Winner: {winner}</h2>
+          <p>Majority: {majority}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
+
+
+
+App.css
+
+
+
+.App {
+  text-align: center;
+  height: 100vh;
+  background-color: rgb(130, 212, 212);
+}
+
+button {
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+h2 {
+  color: green;
+}
+
+
+
+index.js
+
+
+
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+import './App.css' 
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
