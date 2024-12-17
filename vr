@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Form</title>
+</head>
+<body>
+    <h2>Registration Form</h2>
+    <form id="registrationForm" onsubmit="return validateForm()">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br><br>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <label for="dob">Date of Birth (dd-mm-yyyy):</label>
+        <input type="text" id="dob" name="dob" required><br><br>
+
+        <label for="contact">Contact Number:</label>
+        <input type="text" id="contact" name="contact" required><br><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br><br>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        function validateForm() {
+            // Validate Username
+            const username = document.getElementById("username").value;
+            const usernameRegex = /^[a-zA-Z][a-zA-Z0-9]{7,15}$/;
+            if (!usernameRegex.test(username)) {
+                alert("Username must be between 8-16 characters and start with a letter.");
+                return false;
+            }
+
+            // Validate Password
+            const password = document.getElementById("password").value;
+            const passwordRegex = /^(?=.\d)[A-Za-z\d!@#$%^&]{8,16}$$/;
+            if (!passwordRegex.test(password)) {
+                alert("Password must be 8-16 characters, contain at least one number, and exactly one special character.");
+                return false;
+            }
+
+            // Validate Date of Birth
+            const dob = document.getElementById("dob").value;
+            const dobRegex = /^\d{2}-\d{2}-\d{4}$/;
+            if (!dobRegex.test(dob)) {
+                alert("Date of Birth must be in the format dd-mm-yyyy.");
+                return false;
+            }
+
+            // Validate Contact Number
+            const contact = document.getElementById("contact").value;
+            const contactRegex = /^[0-9]+$/;
+            if (!contactRegex.test(contact)) {
+                alert("Contact Number must contain only numbers.");
+                return false;
+            }
+
+            // Validate Email (any domain)
+            const email = document.getElementById("email").value;
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailRegex.test(email)) {
+                alert("Please enter a valid email address.");
+                return false;
+            }
+
+            alert("Form Submitted Successfully!");
+            return true;
+        }
+    </script>
+</body>
+</html>
