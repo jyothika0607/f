@@ -1,0 +1,220 @@
+LoginServelt.java
+
+
+
+package servletcode;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
+public class LoginServlet extends HttpServlet {
+    private String validUsername;
+    private String validPassword;
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        // Retrieve init parameters
+        validUsername = config.getInitParameter("username");
+        validPassword = config.getInitParameter("password");
+    }
+
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+
+        String u = request.getParameter("username");
+        String p = request.getParameter("password");
+
+        try (PrintWriter out = response.getWriter()) {
+            // Validate username and password
+            if (validUsername.equals(u) && validPassword.equals(p)) {
+                HttpSession session = request.getSession(true);
+                session.setAttribute("uname", u);
+                session.setAttribute("START TIME", System.currentTimeMillis());
+
+                long time = (long) session.getAttribute("START TIME");
+                out.println("<!DOCTYPE html>");
+                out.println("<html>");
+                out.println("<head>");
+                out.println("<title>Login Servlet</title>");
+                out.println("</head>");
+                out.println("<body>");
+                out.println("<h1>Welcome, " + u + "!</h1>");
+                out.println("<form action='LogoutServlet' method='post'>");
+                out.println("<input type='submit' value='Logout' style='position: absolute; top: 10px; right: 10px;'>");
+                out.println("</form>");
+                out.println("<p style='position: absolute; top: 50px; right: 10px;'>Login Time: " + new java.util.Date(time) + "</p>");
+
+                out.println("</body>");
+                out.println("</html>");
+            } else {
+                // Invalid credentials
+                out.println("<!DOCTYPE html>");
+                out.println("<html>");
+                out.println("<head>");
+                out.println("<title>Login Failed</title>");
+                out.println("</head>");
+                out.println("<body>");
+                out.println("<h1>Invalid Username or Password</h1>");
+                out.println("<a href='index.html'>Try Again</a>");
+                out.println("</body>");
+                out.println("</html>");
+            }
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    @Override
+    public String getServletInfo() {
+        return "Handles login requests and validates user sessions.";
+    }
+}
+
+
+
+
+index.html
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <form action="LoginServlet" method="post">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <br><br>
+        <button type="submit">Login</button>
+    </form>
+</body>
+</html>
+
+
+
+web.xml
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="6.1" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_1.xsd">
+    <servlet>
+        <servlet-name>LoginServlet</servlet-name>
+        <servlet-class>servletcode.LoginServlet</servlet-class>
+        <init-param>
+            <param-name>username</param-name>
+            <param-value>admin</param-value>
+        </init-param>
+        <init-param>
+            <param-name>password</param-name>
+            <param-value>123</param-value>
+        </init-param>
+    </servlet>
+    <servlet>
+        <servlet-name>LogoutServlet</servlet-name>
+        <servlet-class>servletcode.LogoutServlet</servlet-class>
+    </servlet>
+<!--    <servlet>
+        <servlet-name>welcomeServlet</servlet-name>
+        <servlet-class>servletcode.welcomeServlet</servlet-class>
+    </servlet>-->
+    <servlet-mapping>
+        <servlet-name>LoginServlet</servlet-name>
+        <url-pattern>/LoginServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LogoutServlet</servlet-name>
+        <url-pattern>/LogoutServlet</url-pattern>
+    </servlet-mapping>
+<!--    <servlet-mapping>
+        <servlet-name>welcomeServlet</servlet-name>
+        <url-pattern>/welcomeServlet</url-pattern>
+    </servlet-mapping>-->
+</web-app>
+
+
+
+LogoutServlet.java
+
+
+package servletcode;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
+public class LogoutServlet extends HttpServlet {
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        HttpSession session = request.getSession(false); // false means don't create a new session if it doesn't exist
+        try (PrintWriter out = response.getWriter()) {
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Logout Servlet</title>");
+            out.println("</head>");
+            out.println("<body>");
+            if (session != null && session.getAttribute("uname") != null) {
+                String userName = (String) session.getAttribute("uname");
+                long sessionCreationTime = session.getCreationTime();
+                long sessionDuration = (System.currentTimeMillis() - sessionCreationTime) / 1000;
+                session.invalidate();
+                out.println("<h1>Thank You, " + userName + "!</h1>");
+                out.println("<p>Logout successful!</p>");
+                out.println("<p>Your session lasted " + sessionDuration + " seconds.</p>");
+            } else {
+                out.println("<h1>No active session found!</h1>");
+            }
+            out.println("</body>");
+            out.println("</html>");
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    @Override
+    public String getServletInfo() {
+        return "Handles logout requests and session invalidation.";
+    }// </editor-fold>
+
+}
