@@ -1,0 +1,435 @@
+EmpDao.java
+
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.beans;
+
+/**
+ *
+ * @author Deekshitha
+ */
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
+/**
+ *
+ * @author ADMIN
+ */
+public class EmpDao {
+  
+    private Connection getConnection(){        
+         Connection con= null;
+         try{
+             Class.forName("com.mysql.jdbc.Driver");
+            con=DriverManager.getConnection("jdbc:mysql://localhost:3306/s1","root","P^n0(oorG");
+         }
+         catch(Exception ex){
+             Logger.getLogger(EmpDao.class.getName()).log(Level.SEVERE, null, ex);
+         }
+         return con;
+            
+    }
+    
+    public List<Employee> getEmployeeList(){
+        List<Employee> empList = new ArrayList<>();
+        Connection con = getConnection();
+        Statement st;
+        try {
+            st = con.createStatement();
+            ResultSet rs=st.executeQuery("select * from emp");
+            while(rs.next()){
+                Employee e = new Employee();
+                e.setEmpId(rs.getInt(1));
+                e.setName(rs.getString(2));
+                e.setDeptNo(rs.getInt(3));
+                e.setBranch(rs.getString(4));
+                empList.add(e);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(EmpDao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        finally{
+            try {
+                con.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(EmpDao.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }        
+        return empList;
+    }
+   
+}
+
+
+Employee.java
+
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.beans;
+
+/**
+ *
+ * @author Deekshitha
+ */
+public class Employee {
+    private int empId;
+    private String name;
+    private int deptNo;
+    private String branch;
+
+    public int getEmpId() {
+        return empId;
+    }
+
+    public void setEmpId(int empId) {
+        this.empId = empId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getDeptNo() {
+        return deptNo;
+    }
+
+    public void setDeptNo(int deptNo) {
+        this.deptNo = deptNo;
+    }
+
+    public String getBranch() {
+        return branch;
+    }
+
+    public void setBranch(String branch) {
+        this.branch = branch;
+    }
+    
+}
+
+
+
+LoginController.java
+
+
+package com.example;
+
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.AbstractController;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class LoginController extends AbstractController {
+
+    @Override
+    protected ModelAndView handleRequestInternal(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        // Retrieve username from the form
+        String username = request.getParameter("username");
+
+        if (username == null || username.trim().isEmpty()) {
+            // If username is not provided, return to login with an error message
+            ModelAndView modelAndView = new ModelAndView("login");
+            modelAndView.addObject("error", "Username cannot be empty!");
+            return modelAndView;
+        }
+
+        // Pass the username to the welcome page
+        ModelAndView modelAndView = new ModelAndView("welcome");
+        modelAndView.addObject("username", username);
+        return modelAndView;
+    }
+}
+
+
+
+ViewController.java
+
+
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.example;
+
+/**
+ *
+ * @author Deekshitha
+ */
+import com.beans.EmpDao;
+import com.beans.Employee;
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.AbstractController;
+
+/**
+ *
+ * @author ADMIN
+ */
+public class ViewController extends AbstractController {
+    
+    public ViewController() {
+    }
+    
+    protected ModelAndView handleRequestInternal(
+            HttpServletRequest request,
+            HttpServletResponse response) throws Exception {
+       ModelAndView mav=new ModelAndView();
+       List<Employee> empList=new EmpDao().getEmployeeList();
+       mav.addObject("empList",empList);
+       mav.setViewName("viewEmp");
+       return mav;
+    }
+    
+}
+
+
+
+Welcom.eController.java
+
+
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.example;
+
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.AbstractController;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class WelcomeController extends AbstractController {
+
+    @Override
+    protected ModelAndView handleRequestInternal(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        // Render the welcome page
+        
+           ModelAndView mav = new ModelAndView();
+           String name=request.getParameter("username");
+           mav.addObject("username",name);
+      mav.setViewName("welcome");
+      return mav;
+    }
+}
+
+
+
+CreateDispatcher-servlet.xml
+
+
+
+<?xml version='1.0' encoding='UTF-8' ?>
+<!-- was: <?xml version="1.0" encoding="UTF-8"?> -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+
+    <!--
+    Most controllers will use the ControllerClassNameHandlerMapping above, but
+    for the index controller we are using ParameterizableViewController, so we must
+    define an explicit mapping for it.
+    -->
+    <bean class="org.springframework.web.servlet.mvc.support.ControllerClassNameHandlerMapping"/>
+    <bean class="com.example.LoginController"/>
+    <bean class="com.example.WelcomeController"/>
+    <bean class="com.example.ViewController"/>
+    <bean id="dao" class="com.beans.EmpDao"/> 
+    <bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="mappings">
+            <props>
+                <prop key="index.htm">indexController</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="viewResolver"
+          class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+          p:prefix="/WEB-INF/jsp/"
+          p:suffix=".jsp" />
+
+    <!--
+    The index controller.
+    -->
+    <bean name="indexController"
+          class="org.springframework.web.servlet.mvc.ParameterizableViewController"
+          p:viewName="index" />
+
+</beans>
+
+
+
+
+login.jsp
+
+
+
+
+<%-- 
+    Document   : login
+    Created on : Dec 4, 2024, 9:37:02 PM
+    Author     : Deekshitha
+--%>
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Login</title>
+    </head>
+    <body>
+        <h2>Login Page</h2>
+        <form action="welcome.htm" method="POST">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username"><br><br><!-- comment -->
+            
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password"><br><br><!-- comment -->
+            <input type="submit" value="Login" />
+        </form>
+    </body>
+</html>
+
+
+
+redirect.jsp
+
+
+
+<%--
+Views should be stored under the WEB-INF folder so that
+they are not accessible except through controller process.
+
+This JSP is here to provide a redirect to the dispatcher
+servlet but should be the only JSP outside of WEB-INF.
+--%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<% response.sendRedirect("login.htm"); %>
+
+
+
+
+viewEmp.jsp
+
+
+
+<%-- 
+    Document   : viewEmployees
+    Created on : Nov 24, 2024, 10:07:57 PM
+    Author     : dell
+--%>
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>View Employees</title>
+    </head>
+    <body>
+        
+      
+        <h1>List of Employees</h1>
+        <table border=“2” width=“70%” cellpadding=“2”>
+            <tr><th>Employee Id</th><th>Employee Name</th><th>Department Number</th><th>branch</th></tr>
+            <c:forEach var="emp" items="${empList}">
+                <tr>
+                    <td>${emp.empId}</td>
+                    <td>${emp.name}</td>
+                    <td>${emp.deptNo}</td>
+                    <td>${emp.branch}</td>   
+                    
+                </tr>
+            </c:forEach>
+        </table>
+        <br/>
+    </body>
+</html>
+
+
+
+web.xml
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>/WEB-INF/applicationContext.xml</param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    <servlet>
+        <servlet-name>dispatcher</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>dispatcher</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+    <session-config>
+        <session-timeout>
+            30
+        </session-timeout>
+    </session-config>
+    <welcome-file-list>
+        <welcome-file>redirect.jsp</welcome-file>
+    </welcome-file-list>
+</web-app>
+
+
+
+
+welcome.jsp
+
+
+
+<%-- 
+    Document   : welcome
+    Created on : Dec 4, 2024, 9:44:04 PM
+    Author     : Deekshitha
+--%>
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Welcome</title>
+    </head>
+    <body>
+        <h1>Hello ${username}</h1>
+        <a href="view">View Employees</a>
+    </body>
+</html>
